@@ -77,9 +77,13 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 @synthesize bouncingOffset = _bouncingOffset;
 @synthesize delegate = _delegate;
 
-- (id) initWithRootViewController:(UIViewController*)rootViewController {
+- (id) initWithRootViewController:(UIViewController*)rootViewController
+	fullScreen: (BOOL) inFullScreen
+{
     self = [super init];
     if (self) {
+		self.wantsFullScreenLayout = inFullScreen;
+
         // set default options
         self.options = PPRevealSideOptionsShowShadows | PPRevealSideOptionsBounceAnimations | PPRevealSideOptionsCloseCompletlyBeforeOpeningNewDirection;
         
@@ -100,6 +104,12 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
         
         [self setRootViewController:rootViewController];
     }
+    return self;
+}
+
+- (id) initWithRootViewController:(UIViewController*)rootViewController {
+    self = [self initWithRootViewController: rootViewController fullScreen: NO];
+
     return self;
 }
 

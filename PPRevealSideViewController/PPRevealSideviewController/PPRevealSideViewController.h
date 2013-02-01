@@ -243,6 +243,12 @@ If you want to pop a new center controller, then do the following :
  */
 
 /**
+ Same as below, with the addition of a flag to control full screen mode.
+ */
+
+- (id) initWithRootViewController:(UIViewController*)rootViewController fullScreen: (BOOL) inFullScreen;
+
+/**
  Initialize the reveal controller with a rootViewController. This rootViewController will be in the center.
  @param rootViewController The center view controller.
  @return the controller initialized
