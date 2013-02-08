@@ -129,6 +129,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 - (void) viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    [self handleShadows];		// if controller hidden while a modal is presented, then rotated, shadows can get confused. fix that by removing on dissapear and replacing on appear
     [_rootViewController viewWillAppear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
@@ -156,6 +157,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 - (void) viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
+    [self removeShadow];		// if controller hidden while a modal is presented, then rotated, shadows can get confused. fix that by removing on dissapear and replacing on appear
     [_rootViewController viewDidDisappear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
