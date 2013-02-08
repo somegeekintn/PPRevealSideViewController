@@ -126,11 +126,15 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
     self.view.autoresizesSubviews = YES;
 }
 
+    [super viewWillAppear:animated];
+    [self handleShadows];		// if controller hidden while a modal is presented, then rotated, shadows can get confused. fix that by removing on dissapear and replacing on appear
+    if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewWillAppear:animated];
+    
 - (void) viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
     [self handleShadows];		// if controller hidden while a modal is presented, then rotated, shadows can get confused. fix that by removing on dissapear and replacing on appear
-    [_rootViewController viewWillAppear:animated];
+    if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewWillAppear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
     if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithInt:direction]] viewWillAppear:animated];
@@ -139,7 +143,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 - (void) viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    [_rootViewController viewDidAppear:animated];
+    if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewDidAppear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
     if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithInt:direction]] viewDidAppear:animated];
@@ -148,7 +152,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 - (void) viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    [_rootViewController viewWillDisappear:animated];
+    if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewWillDisappear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
     if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithInt:direction]] viewWillDisappear:animated];
@@ -158,7 +162,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 {
     [super viewDidDisappear:animated];
     [self removeShadow];		// if controller hidden while a modal is presented, then rotated, shadows can get confused. fix that by removing on dissapear and replacing on appear
-    [_rootViewController viewDidDisappear:animated];
+    if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewDidDisappear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
     if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithInt:direction]] viewDidDisappear:animated];
