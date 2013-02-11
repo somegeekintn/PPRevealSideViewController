@@ -126,10 +126,6 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
     self.view.autoresizesSubviews = YES;
 }
 
-    [super viewWillAppear:animated];
-    [self handleShadows];		// if controller hidden while a modal is presented, then rotated, shadows can get confused. fix that by removing on dissapear and replacing on appear
-    if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewWillAppear:animated];
-    
 - (void) viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
