@@ -379,7 +379,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
             _animationInProgress = YES;
             [UIView animateWithDuration:OpenAnimationTime*0.15
                                   delay:0.0
-                                options:UIViewAnimationCurveEaseInOut
+                                options:UIViewAnimationOptionCurveEaseInOut
                              animations:^{
                                  CGFloat offsetBounce;
                                  if (direction == PPRevealSideDirectionLeft || direction == PPRevealSideDirectionRight)
@@ -392,7 +392,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
                              } completion:^(BOOL finished) {
                                  [UIView animateWithDuration:OpenAnimationTime*0.15
                                                        delay:0.0
-                                                     options:UIViewAnimationCurveEaseInOut
+                                                     options:UIViewAnimationOptionCurveEaseInOut
                                                   animations:^{
                                                       _rootViewController.view.frame = originalFrame;
                                                   } completion:^(BOOL finished) {
@@ -541,6 +541,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 - (void) openCompletelySide:(PPRevealSideDirection)direction animated:(BOOL)animated completion:(void(^)())completionBlock{
 	_shouldNotCloseWhenPushingSameDirection = YES;
     [self pushOldViewControllerOnDirection:direction withOffset:0.0 animated:YES completion:completionBlock];
+    _shouldNotCloseWhenPushingSameDirection = NO;
 }
 
 - (void) openCompletelyAnimated:(BOOL)animated{
@@ -569,6 +570,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
     _shouldNotCloseWhenPushingSameDirection = YES;
     PPRevealSideDirection direction = [self getSideToClose];
     [self pushOldViewControllerOnDirection:direction withOffset:offset animated:animated completion:completionBlock];
+    _shouldNotCloseWhenPushingSameDirection = NO;
 }
 
 - (void) replaceCentralViewControllerWithNewController:(UIViewController*)newCenterController animated:(BOOL)animated animationDirection:(PPRevealSideDirection)direction completion:(void(^)())completionBlock{
@@ -1192,7 +1194,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 {
     CGFloat offset = [[_viewControllersOffsets objectForKey:[NSNumber numberWithInt:direction]] floatValue];
     
-    if (UIInterfaceOrientationIsLandscape(interfaceOrientation)) {
+    if (UIInterfaceOrientationIsLandscape(interfaceOrientation) && offset != 0.0) {
         if (![self isOptionEnabled:PPRevealSideOptionsKeepOffsetOnRotation])
         {
             // Take an orientation free rect
@@ -1277,13 +1279,13 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
         if (panDiffX > 0 && panDiffX > OFFSET_TRIGGER_CHOSE_DIRECTION)
             _currentPanDirection = PPRevealSideDirectionLeft;
         else
-            if (panDiffX < 0 && panDiffX < OFFSET_TRIGGER_CHOSE_DIRECTION)
+            if (panDiffX < 0 && panDiffX < -OFFSET_TRIGGER_CHOSE_DIRECTION)
                 _currentPanDirection = PPRevealSideDirectionRight;
             else
                 if (panDiffY > 0 && panDiffY > OFFSET_TRIGGER_CHOSE_DIRECTION)
                     _currentPanDirection = PPRevealSideDirectionTop;
                 else
-                    if (panDiffY < 0 && panDiffY < OFFSET_TRIGGER_CHOSE_DIRECTION)
+                    if (panDiffY < 0 && panDiffY < -OFFSET_TRIGGER_CHOSE_DIRECTION)
                         _currentPanDirection = PPRevealSideDirectionBottom;
         
     }
