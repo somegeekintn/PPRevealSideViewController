@@ -11,15 +11,62 @@
 #import <objc/runtime.h>
 
 #pragma mark - Unit constants
-static const CGFloat DefaultOffset = 70.0;
-static const CGFloat DefaultOffsetBouncing = 5.0;
-static const CGFloat OpenAnimationTime = 0.3;
-static const CGFloat OpenAnimationTimeBouncingRatio = 0.3;
-static const CGFloat BOUNCE_ERROR_OFFSET = 14.0;
-static const CGFloat divisionNumber = 5.0;
-static const CGFloat OFFSET_TRIGGER_CHOSE_DIRECTION = 3.0;
-static const CGFloat OFFSET_TRIGGER_CHANGE_DIRECTION = 0.0;
-static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
+
+@implementation PPRevealSideViewSettings
+
+- (id) init
+{
+	if ((self = [super init]) != nil) {
+		self.defaultOffset = 70.0;
+		self.defaultOffsetBouncing = 5.0;
+		self.openAnimationTime = 0.3;
+		self.openAnimationTimeBouncingRatio = 0.3;
+		self.bounceErrorOffset = 14.0;
+		self.divisionNumber = 5.0;
+		self.offsetTriggerChoseDirection = 3.0;
+		self.offsetTriggerChangeDirection = 0.0;
+		self.maxTriggerOffset = 100.0;
+
+		self.shadowOffset = CGSizeZero;
+		self.shadowOpacity = 0.75;
+		self.shadowRadius = 10.0;
+		self.shadowColor = [UIColor blackColor];
+	}
+	
+	return self;
+}
+
+- (id) copyWithZone: (NSZone *) inZone
+{
+	PPRevealSideViewSettings		*settingsCopy = [[PPRevealSideViewSettings alloc] init];
+
+	settingsCopy.defaultOffset = self.defaultOffset;
+	settingsCopy.defaultOffsetBouncing = self.defaultOffsetBouncing;
+	settingsCopy.openAnimationTime = self.openAnimationTime;
+	settingsCopy.openAnimationTimeBouncingRatio = self.openAnimationTimeBouncingRatio;
+	settingsCopy.bounceErrorOffset = self.bounceErrorOffset;
+	settingsCopy.divisionNumber = self.divisionNumber;
+	settingsCopy.offsetTriggerChoseDirection = self.offsetTriggerChoseDirection;
+	settingsCopy.offsetTriggerChangeDirection = self.offsetTriggerChangeDirection;
+	settingsCopy.maxTriggerOffset = self.maxTriggerOffset;
+
+	settingsCopy.shadowOffset = self.shadowOffset;
+	settingsCopy.shadowOpacity = self.shadowOpacity;
+	settingsCopy.shadowRadius = self.shadowRadius;
+	settingsCopy.shadowColor = PP_AUTORELEASE([self.shadowColor copy]);
+	
+	return settingsCopy;
+}
+
+- (void) dealloc {
+    PP_RELEASE(_shadowColor);
+
+#if !PP_ARC_ENABLED
+    [super dealloc];
+#endif
+}
+
+@end
 
 #pragma mark -
 @interface PPRevealSideViewController (Private)
@@ -77,6 +124,17 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 @synthesize bouncingOffset = _bouncingOffset;
 @synthesize delegate = _delegate;
 
++ (PPRevealSideViewSettings *) defaultSettings
+{
+	static PPRevealSideViewSettings		*sDefaultSettings = nil;
+	
+	if (sDefaultSettings == nil) {
+		sDefaultSettings = [[PPRevealSideViewSettings alloc] init];
+	}
+	
+	return sDefaultSettings;
+}
+
 - (id) initWithRootViewController:(UIViewController*)rootViewController
 	fullScreen: (BOOL) inFullScreen
 {
@@ -84,7 +142,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
     if (self) {
 		self.wantsFullScreenLayout = inFullScreen;
 
-        // set default options
+        // set default options (leaving this settings for now but would be nice if they used the settings class so as to take advantage of the default settings)
         self.options = PPRevealSideOptionsShowShadows | PPRevealSideOptionsBounceAnimations | PPRevealSideOptionsCloseCompletlyBeforeOpeningNewDirection;
         
         self.bouncingOffset = -1.0;
@@ -191,7 +249,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 }
 
 - (void) pushViewController:(UIViewController*)controller onDirection:(PPRevealSideDirection)direction animated:(BOOL)animated completion:(void(^)())completionBlock{
-    [self pushViewController:controller onDirection:direction withOffset:DefaultOffset animated:animated completion:completionBlock];
+    [self pushViewController:controller onDirection:direction withOffset:self.settings.defaultOffset animated:animated completion:completionBlock];
 }
 
 - (void) pushViewController:(UIViewController*)controller onDirection:(PPRevealSideDirection)direction animated:(BOOL)animated forceToPopPush:(BOOL)forcePopPush{
@@ -199,7 +257,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 }
 
 - (void) pushViewController:(UIViewController*)controller onDirection:(PPRevealSideDirection)direction animated:(BOOL)animated forceToPopPush:(BOOL)forcePopPush completion:(void(^)())completionBlock{
-    [self pushViewController:controller onDirection:direction withOffset:DefaultOffset animated:animated forceToPopPush:forcePopPush completion:completionBlock];
+    [self pushViewController:controller onDirection:direction withOffset:self.settings.defaultOffset animated:animated forceToPopPush:forcePopPush completion:completionBlock];
 }
 
 - (void) pushViewController:(UIViewController*)controller onDirection:(PPRevealSideDirection)direction withOffset:(CGFloat)offset animated:(BOOL)animated{
@@ -281,7 +339,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
     // if bounces is activated and the push is animated, calculate the first frame with the bounce
     CGRect rootFrame = CGRectZero;
     if ([self canCrossOffsets] && animated && offset != 0.0f) // then we make an offset
-        rootFrame = [self getSlidingRectForOffset:offset- ((_bouncingOffset == - 1.0) ? DefaultOffsetBouncing : _bouncingOffset) forDirection:direction];
+        rootFrame = [self getSlidingRectForOffset:offset- ((_bouncingOffset == - 1.0) ? self.settings.defaultOffsetBouncing : _bouncingOffset) forDirection:direction];
     else
         rootFrame = [self getSlidingRectForOffset:offset forDirection:direction];
     
@@ -295,7 +353,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
                                                    andDirection:direction
                                         alreadyFullScreenLayout:controller.wantsFullScreenLayout];
     
-    NSTimeInterval animationTime = OpenAnimationTime;
+    NSTimeInterval animationTime = self.settings.openAnimationTime;
 	//    if ([self canCrossOffsets]) animationTime = OpenAnimationTime;
 	//    else animationTime = OpenAnimationTime;
     
@@ -309,7 +367,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
                          completion:^(BOOL finished) {
                              if ([self canCrossOffsets]) // then we come to normal
                              {
-                                 [UIView animateWithDuration:OpenAnimationTime*OpenAnimationTimeBouncingRatio
+                                 [UIView animateWithDuration:self.settings.openAnimationTime*self.settings.openAnimationTimeBouncingRatio
                                                        delay:0.0
                                                      options:options
                                                   animations:^{
@@ -360,7 +418,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 }
 
 - (void) pushOldViewControllerOnDirection:(PPRevealSideDirection)direction animated:(BOOL)animated completion:(void(^)())completionBlock{
-    [self pushOldViewControllerOnDirection:direction withOffset:DefaultOffset animated:animated completion:completionBlock];
+    [self pushOldViewControllerOnDirection:direction withOffset:self.settings.defaultOffset animated:animated completion:completionBlock];
 }
 
 - (void) pushOldViewControllerOnDirection:(PPRevealSideDirection)direction withOffset:(CGFloat)offset animated:(BOOL)animated{
@@ -377,20 +435,20 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
             // make a small animation to indicate that there is not yet a controller
             CGRect originalFrame = _rootViewController.view.frame;
             _animationInProgress = YES;
-            [UIView animateWithDuration:OpenAnimationTime*0.15
+            [UIView animateWithDuration:self.settings.openAnimationTime*0.15
                                   delay:0.0
                                 options:UIViewAnimationOptionCurveEaseInOut
                              animations:^{
                                  CGFloat offsetBounce;
                                  if (direction == PPRevealSideDirectionLeft || direction == PPRevealSideDirectionRight)
-                                     offsetBounce = CGRectGetWidth(_rootViewController.view.frame)-BOUNCE_ERROR_OFFSET;
+                                     offsetBounce = CGRectGetWidth(_rootViewController.view.frame)-self.settings.bounceErrorOffset;
                                  else
-                                     offsetBounce = CGRectGetHeight(_rootViewController.view.frame)-BOUNCE_ERROR_OFFSET;
+                                     offsetBounce = CGRectGetHeight(_rootViewController.view.frame)-self.settings.bounceErrorOffset;
                                  
                                  _rootViewController.view.frame = [self getSlidingRectForOffset:offsetBounce
                                                                                    forDirection:direction];
                              } completion:^(BOOL finished) {
-                                 [UIView animateWithDuration:OpenAnimationTime*0.15
+                                 [UIView animateWithDuration:self.settings.openAnimationTime*0.15
                                                        delay:0.0
                                                      options:UIViewAnimationOptionCurveEaseInOut
                                                   animations:^{
@@ -482,7 +540,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
             
             // execute the blocks depending on animated or not
             if (animated) {
-                NSTimeInterval animationTime = OpenAnimationTime;
+                NSTimeInterval animationTime = self.settings.openAnimationTime;
 				//                if ([self canCrossOffsets]) animationTime = OpenAnimationTime;
 				//                else animationTime = OpenAnimationTime;
                 
@@ -505,7 +563,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
         PPRevealSideDirection directionToOpen = [self getSideToClose];
         
         // open completely and then close it
-        [UIView animateWithDuration:OpenAnimationTime*OpenAnimationTimeBouncingRatio
+        [UIView animateWithDuration:self.settings.openAnimationTime*self.settings.openAnimationTimeBouncingRatio
                               delay:0.0
                             options:options
                          animations:^{
@@ -517,7 +575,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
         // we just execute the close anim block
         // Badly, we can't use the bigAnimBlock as an animation block since there is the finished parameter. So, just execute it !
         if (animated) {
-            [UIView animateWithDuration:OpenAnimationTime
+            [UIView animateWithDuration:self.settings.openAnimationTime
                                   delay:0.0
                                 options:options
                              animations:^{
@@ -559,7 +617,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 }
 
 - (void) replaceAfterOpenedCompletelyAnimated:(BOOL)animated completion:(void(^)())completionBlock{
-    [self replaceAfterOpenedCompletelyWithOffset:DefaultOffset animated:animated completion:completionBlock];
+    [self replaceAfterOpenedCompletelyWithOffset:self.settings.defaultOffset animated:animated completion:completionBlock];
 }
 
 - (void) replaceAfterOpenedCompletelyWithOffset:(CGFloat)offset animated:(BOOL)animated{
@@ -584,7 +642,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 - (void) preloadViewController:(UIViewController*)controller forSide:(PPRevealSideDirection)direction {
     [self preloadViewController:controller
                         forSide:direction
-                     withOffset:DefaultOffset];
+                     withOffset:self.settings.defaultOffset];
 }
 
 - (void) preloadViewController:(UIViewController*)controller forSide:(PPRevealSideDirection)direction withOffset:(CGFloat)offset
@@ -746,6 +804,16 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 {
     return [_viewControllers objectForKey:[NSNumber numberWithInt:side]];
 }
+
+- (PPRevealSideViewSettings *) settings
+{
+	if (_settings == nil) {
+		_settings = [[PPRevealSideViewController defaultSettings] copy];
+	}
+	
+	return _settings;
+}
+
 #pragma mark - Private methods
 
 - (void) setRootViewController:(UIViewController *)controller replaceToOrigin:(BOOL)replace
@@ -802,10 +870,10 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 
 - (void) addShadow
 {
-    _rootViewController.view.layer.shadowOffset = CGSizeZero;
-    _rootViewController.view.layer.shadowOpacity = 0.75f;
-    _rootViewController.view.layer.shadowRadius = 10.0f;
-    _rootViewController.view.layer.shadowColor = [UIColor blackColor].CGColor;
+    _rootViewController.view.layer.shadowOffset = self.settings.shadowOffset;
+    _rootViewController.view.layer.shadowOpacity = self.settings.shadowOpacity;
+    _rootViewController.view.layer.shadowRadius = self.settings.shadowRadius;
+    _rootViewController.view.layer.shadowColor = [self.settings.shadowColor CGColor];
     _rootViewController.view.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.view.layer.bounds].CGPath;
     _rootViewController.view.clipsToBounds = NO;
 }
@@ -1276,16 +1344,16 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
         CGFloat panDiffX = currentPoint.x - _panOrigin.x;
         CGFloat panDiffY = currentPoint.y - _panOrigin.y;
 		
-        if (panDiffX > 0 && panDiffX > OFFSET_TRIGGER_CHOSE_DIRECTION)
+        if (panDiffX > 0 && panDiffX > self.settings.offsetTriggerChoseDirection)
             _currentPanDirection = PPRevealSideDirectionLeft;
         else
-            if (panDiffX < 0 && panDiffX < -OFFSET_TRIGGER_CHOSE_DIRECTION)
+            if (panDiffX < 0 && panDiffX < -self.settings.offsetTriggerChoseDirection)
                 _currentPanDirection = PPRevealSideDirectionRight;
             else
-                if (panDiffY > 0 && panDiffY > OFFSET_TRIGGER_CHOSE_DIRECTION)
+                if (panDiffY > 0 && panDiffY > self.settings.offsetTriggerChoseDirection)
                     _currentPanDirection = PPRevealSideDirectionTop;
                 else
-                    if (panDiffY < 0 && panDiffY < -OFFSET_TRIGGER_CHOSE_DIRECTION)
+                    if (panDiffY < 0 && panDiffY < -self.settings.offsetTriggerChoseDirection)
                         _currentPanDirection = PPRevealSideDirectionBottom;
         
     }
@@ -1363,7 +1431,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 	
     // test if whe changed direction
     if (_currentPanDirection == PPRevealSideDirectionRight || _currentPanDirection == PPRevealSideDirectionLeft) {
-        if (offset >= CGRectGetWidth(self.rootViewController.view.frame)-OFFSET_TRIGGER_CHANGE_DIRECTION) {
+        if (offset >= CGRectGetWidth(self.rootViewController.view.frame)-self.settings.offsetTriggerChangeDirection) {
             // change direction if possible
             PPRevealSideDirection newDirection;
             if (_currentPanDirection == PPRevealSideDirectionLeft)
@@ -1386,7 +1454,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
     }
     else
     {
-        if (offset >= CGRectGetHeight(self.rootViewController.view.frame) - OFFSET_TRIGGER_CHANGE_DIRECTION) {
+        if (offset >= CGRectGetHeight(self.rootViewController.view.frame) - self.settings.offsetTriggerChangeDirection) {
             // change direction if possible
             PPRevealSideDirection newDirection;
             if (_currentPanDirection == PPRevealSideDirectionBottom)
@@ -1418,9 +1486,9 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
 		
         CGFloat triggerStep;
         if (_currentPanDirection == PPRevealSideDirectionLeft || _currentPanDirection == PPRevealSideDirectionRight)
-            triggerStep = (CGRectGetWidth(self.rootViewController.view.frame) - offsetController)/divisionNumber;
+            triggerStep = (CGRectGetWidth(self.rootViewController.view.frame) - offsetController)/self.settings.divisionNumber;
         else
-            triggerStep = (CGRectGetHeight(self.rootViewController.view.frame) - offsetController)/divisionNumber;
+            triggerStep = (CGRectGetHeight(self.rootViewController.view.frame) - offsetController)/self.settings.divisionNumber;
         
         
         BOOL shouldClose;
@@ -1429,7 +1497,7 @@ static const CGFloat MAX_TRIGGER_OFFSET = 100.0;
         CGFloat offsetTriggered;
         
         // set a max trigger
-        triggerStep = MIN(triggerStep, MAX_TRIGGER_OFFSET);
+        triggerStep = MIN(triggerStep, self.settings.maxTriggerOffset);
         
         if (_currentPanDirection == PPRevealSideDirectionLeft || _currentPanDirection == PPRevealSideDirectionRight)
         {
@@ -1620,6 +1688,9 @@ static char revealSideViewControllerKey;
     if (!controller && self.tabBarController)
         controller = self.tabBarController.revealSideViewController;
     
+	if (controller == nil && self.parentViewController != nil)
+		controller = [self.parentViewController revealSideViewController];
+		
     return controller;
 }
 

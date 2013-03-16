@@ -83,6 +83,26 @@ enum {
 typedef NSUInteger PPRevealSideOptions;
 
 
+@interface PPRevealSideViewSettings : NSObject <NSCopying>
+
+@property (nonatomic, assign) CGFloat					defaultOffset;
+@property (nonatomic, assign) CGFloat					defaultOffsetBouncing;
+@property (nonatomic, assign) CGFloat					openAnimationTime;
+@property (nonatomic, assign) CGFloat					openAnimationTimeBouncingRatio;
+@property (nonatomic, assign) CGFloat					bounceErrorOffset;
+@property (nonatomic, assign) CGFloat					divisionNumber;
+@property (nonatomic, assign) CGFloat					offsetTriggerChoseDirection;
+@property (nonatomic, assign) CGFloat					offsetTriggerChangeDirection;
+@property (nonatomic, assign) CGFloat					maxTriggerOffset;
+
+@property (nonatomic, assign) CGSize					shadowOffset;
+@property (nonatomic, assign) CGFloat					shadowOpacity;
+@property (nonatomic, assign) CGFloat					shadowRadius;
+@property (nonatomic, retain) UIColor					*shadowColor;
+
+@end
+
+
 @protocol PPRevealSideViewControllerDelegate;
 
 /** Allow pushing controllers on side views.
@@ -236,6 +256,10 @@ If you want to pop a new center controller, then do the following :
 @property (nonatomic, assign) id <PPRevealSideViewControllerDelegate> delegate;
 
 @property (nonatomic, readonly) PPRevealSideDirection sideDirectionOpened;
+
+@property (nonatomic, retain) PPRevealSideViewSettings	*settings;
+
++ (PPRevealSideViewSettings *) defaultSettings;
 
 /**---------------------------------------------------------------------------------------
  * @name Init method
