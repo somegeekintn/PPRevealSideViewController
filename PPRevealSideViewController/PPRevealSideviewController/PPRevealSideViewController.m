@@ -519,7 +519,8 @@
             
             // this is the completion block when you pop then push the new controller
             void (^smallAnimBlockCompletion)(BOOL) = ^(BOOL finished) {
-                if (finished) {
+//                if (finished) {
+// if this isn't allowed to execute, gestures remain attached, where they shouldn't be, etc. basically everything breaks
                     [self informDelegateWithOptionalSelector:@selector(pprevealSideViewController:didPopToController:) withParam:centerController];
                     
                     // remove the view (don't need to surcharge (not english this word ? ... ) all the interface).
@@ -535,7 +536,7 @@
 					else{
 						if (completionBlock) completionBlock();
 					}
-                }
+//                }
             };
             
             // execute the blocks depending on animated or not
