@@ -1613,7 +1613,7 @@
     return [_rootViewController shouldAutorotate];
 }
 
-- (NSUInteger) supportedInterfaceOrientations{
+- (UIInterfaceOrientationMask) supportedInterfaceOrientations{
     return [_rootViewController supportedInterfaceOrientations];
 }
 
