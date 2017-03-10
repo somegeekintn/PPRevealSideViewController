@@ -191,7 +191,7 @@
     if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewWillAppear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
-    if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithInt:direction]] viewWillAppear:animated];
+    if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger: direction]] viewWillAppear:animated];
 }
 
 - (void) viewDidAppear:(BOOL)animated
@@ -200,7 +200,7 @@
     if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewDidAppear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
-    if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithInt:direction]] viewDidAppear:animated];
+    if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:direction]] viewDidAppear:animated];
 }
 
 - (void) viewWillDisappear:(BOOL)animated
@@ -209,7 +209,7 @@
     if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewWillDisappear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
-    if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithInt:direction]] viewWillDisappear:animated];
+    if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:direction]] viewWillDisappear:animated];
 }
 
 - (void) viewDidDisappear:(BOOL)animated
@@ -219,7 +219,7 @@
     if (!PPSystemVersionGreaterOrEqualThan(5.0)) [_rootViewController viewDidDisappear:animated];
     
     PPRevealSideDirection direction = [self getSideToClose];
-    if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithInt:direction]] viewDidDisappear:animated];
+    if (direction != PPRevealSideDirectionNone) [[_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:direction]] viewDidDisappear:animated];
 }
 
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
@@ -303,7 +303,7 @@
 
     _animationInProgress = YES;
     
-    NSNumber *directionNumber = [NSNumber numberWithInt:direction];
+    NSNumber *directionNumber = [NSNumber numberWithUnsignedInteger:direction];
     
     // save the offset
     [self setOffset:offset forDirection:direction];
@@ -426,7 +426,7 @@
 }
 
 - (void) pushOldViewControllerOnDirection:(PPRevealSideDirection)direction withOffset:(CGFloat)offset animated:(BOOL)animated completion:(void(^)())completionBlock{
-    UIViewController *oldController = [_viewControllers objectForKey:[NSNumber numberWithInt:direction]];
+    UIViewController *oldController = [_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:direction]];
     if (oldController) {
 		[self pushViewController:oldController onDirection:direction withOffset:offset animated:animated forceToPopPush:NO completion:completionBlock];
     }
@@ -524,7 +524,7 @@
                     [self informDelegateWithOptionalSelector:@selector(pprevealSideViewController:didPopToController:) withParam:centerController];
                     
                     // remove the view (don't need to surcharge (not english this word ? ... ) all the interface).
-                    UIViewController *oldController = (UIViewController*)[_viewControllers objectForKey:[NSNumber numberWithInt:directionToClose]];
+                    UIViewController *oldController = (UIViewController*)[_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:directionToClose]];
                     
                     [self removeControllerFromView:oldController animated:animated];
                     
@@ -658,12 +658,12 @@
 {
     if (direction == [self sideDirectionOpened] && !force) return;
     
-    UIViewController *existingController = [_viewControllers objectForKey:[NSNumber numberWithInt:direction]];
+    UIViewController *existingController = [_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:direction]];
     if (existingController != controller) {
         
         if (existingController.view.superview) [self removeControllerFromView:existingController animated:NO];
         
-        [_viewControllers setObject:controller forKey:[NSNumber numberWithInt:direction]];
+        [_viewControllers setObject:controller forKey:[NSNumber numberWithUnsignedInteger:direction]];
         if (![controller isViewLoaded]) {
             if (PPSystemVersionGreaterOrEqualThan(5.0)) [controller willMoveToParentViewController:self];
             
@@ -683,7 +683,7 @@
 
 - (void) unloadViewControllerForSide:(PPRevealSideDirection)direction
 {
-    NSNumber *key = [NSNumber numberWithInt:direction];
+    NSNumber *key = [NSNumber numberWithUnsignedInteger:direction];
     UIViewController *controller = [_viewControllers objectForKey:key];
     
     [self removeControllerFromView:controller animated:NO];
@@ -715,7 +715,7 @@
 - (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if ([keyPath isEqualToString:@"view.frame"]) {
         PPRevealSideDirection direction = [self getSideToClose];
-        UIViewController *openedController = [_viewControllers objectForKey:[NSNumber numberWithInt:direction]];
+        UIViewController *openedController = [_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:direction]];
         if (openedController) {
             openedController.view.revealSideInset = [self getEdgetInsetForDirection:direction];
         }
@@ -740,13 +740,13 @@
                             options:UIViewAnimationOptionCurveEaseInOut
                          animations:^{
                              PPRevealSideDirection direction = [self getSideToClose];
-                             UIViewController *openedController = [_viewControllers objectForKey:[NSNumber numberWithInt:direction]];
+                             UIViewController *openedController = [_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:direction]];
                              CGRect newFrame = [self getSideViewFrameFromRootFrame:_rootViewController.view.frame
                                                                       andDirection:direction
                                                            alreadyFullScreenLayout:openedController.wantsFullScreenLayout];
                              openedController.view.frame = newFrame;
                              
-                             CGFloat offset = [[_viewControllersOffsets objectForKey:[NSNumber numberWithInt:direction]] floatValue];
+                             CGFloat offset = [[_viewControllersOffsets objectForKey:[NSNumber numberWithUnsignedInteger:direction]] floatValue];
                              CGRect rootFrame = [self getSlidingRectForOffset:offset forDirection:direction];
                              _rootViewController.view.frame = rootFrame;
                              PPRSLog(@"%@", NSStringFromCGRect(rootFrame));
@@ -803,7 +803,7 @@
 
 - (UIViewController*)controllerForSide:(PPRevealSideDirection)side
 {
-    return [_viewControllers objectForKey:[NSNumber numberWithInt:side]];
+    return [_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:side]];
 }
 
 - (PPRevealSideViewSettings *) settings
@@ -1092,7 +1092,7 @@
 - (void) setOffset:(CGFloat)offset forDirection:(PPRevealSideDirection)direction
 {
     // This is always an offset for portrait
-    [_viewControllersOffsets setObject:[NSNumber numberWithFloat:offset] forKey:[NSNumber numberWithInt:direction]];
+    [_viewControllersOffsets setObject:[NSNumber numberWithFloat:offset] forKey:[NSNumber numberWithUnsignedInteger:direction]];
 }
 
 - (void) removeControllerFromView:(UIViewController*)controller animated:(BOOL)animated
@@ -1261,7 +1261,7 @@
 
 - (CGFloat) getOffsetForDirection:(PPRevealSideDirection)direction andInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    CGFloat offset = [[_viewControllersOffsets objectForKey:[NSNumber numberWithInt:direction]] floatValue];
+    CGFloat offset = [[_viewControllersOffsets objectForKey:[NSNumber numberWithUnsignedInteger:direction]] floatValue];
     
     if (UIInterfaceOrientationIsLandscape(interfaceOrientation) && offset != 0.0) {
         if (![self isOptionEnabled:PPRevealSideOptionsKeepOffsetOnRotation])
@@ -1383,7 +1383,7 @@
     }
     
     // see if there is a controller or not for the direction. If yes, then add it.
-    UIViewController *c = [_viewControllers objectForKey:[NSNumber numberWithInt:_currentPanDirection]];
+    UIViewController *c = [_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:_currentPanDirection]];
     if (c) {
         if (!c.view.superview)
         {
@@ -1440,8 +1440,8 @@
             else
                 newDirection = PPRevealSideDirectionLeft;
             
-            if ([_viewControllers objectForKey:[NSNumber numberWithInt:newDirection]]) {
-                UIViewController *c = [_viewControllers objectForKey:[NSNumber numberWithInt:_currentPanDirection]];
+            if ([_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:newDirection]]) {
+                UIViewController *c = [_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:_currentPanDirection]];
                 
                 [self removeControllerFromView:c animated:YES];
                 
@@ -1463,8 +1463,8 @@
             else
                 newDirection = PPRevealSideDirectionBottom;
             
-            if ([_viewControllers objectForKey:[NSNumber numberWithInt:newDirection]]) {
-                UIViewController *c = [_viewControllers objectForKey:[NSNumber numberWithInt:_currentPanDirection]];
+            if ([_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:newDirection]]) {
+                UIViewController *c = [_viewControllers objectForKey:[NSNumber numberWithUnsignedInteger:_currentPanDirection]];
                 
                 [self removeControllerFromView:c animated:YES];
                 
