@@ -1159,34 +1159,37 @@
 }
 
 - (CGRect) getSlidingRectForOffset:(CGFloat)offset forDirection:(PPRevealSideDirection)direction andOrientation:(UIInterfaceOrientation)orientation {
+	CGFloat	width = CGRectGetWidth(_rootViewController.view.frame);
+	CGFloat	height = CGRectGetHeight(_rootViewController.view.frame);
+	CGRect	rectToReturn = CGRectZero;
+
     //if (_wasClosed)
     // Don't know why I limited this test to the case pan from close. The same set min should happen when from open.
     // That's probably a failed attempt to handle slide from left to right when having controllers on both side. This works fine without this test
-    if (direction == PPRevealSideDirectionLeft || direction == PPRevealSideDirectionRight) offset = MIN(CGRectGetWidth(PPScreenBounds()), offset);
-    
-    if (direction == PPRevealSideDirectionTop || direction == PPRevealSideDirectionBottom) offset = MIN(CGRectGetHeight(self.view.frame), offset);
-    CGRect rectToReturn = CGRectZero;
+    if (direction == PPRevealSideDirectionLeft || direction == PPRevealSideDirectionRight) offset = MIN(width, offset);
+    if (direction == PPRevealSideDirectionTop || direction == PPRevealSideDirectionBottom) offset = MIN(height, offset);
+
     rectToReturn.size = _rootViewController.view.frame.size;
-    
-    CGFloat width = CGRectGetWidth(_rootViewController.view.frame);
-    CGFloat height = CGRectGetHeight(_rootViewController.view.frame);
-    switch (direction) {
+
+	switch (direction) {
         case PPRevealSideDirectionLeft:
-            rectToReturn.origin = CGPointMake(width-offset, 0.0);
-            break;
-        case PPRevealSideDirectionRight:
-            rectToReturn.origin = CGPointMake(-(width-offset), 0.0);
-            break;
-        case PPRevealSideDirectionBottom:
-            rectToReturn.origin = CGPointMake(0.0, -(height-offset));
-            break;
-        case PPRevealSideDirectionTop:
-            rectToReturn.origin = CGPointMake(0.0, height-offset);
-            break;
-        default:
-            break;
-    }
-    
+			if (width > height) { offset += width - height; }
+			rectToReturn.origin = CGPointMake(width - offset, 0.0);
+			break;
+       case PPRevealSideDirectionRight:
+			if (width > height) { offset += width - height; }
+			rectToReturn.origin = CGPointMake(offset - width, 0.0);
+			break;
+       case PPRevealSideDirectionBottom:
+			if (width > height) { offset -= width - height; }
+			rectToReturn.origin = CGPointMake(offset - height, 0.0);
+ 			break;
+      case PPRevealSideDirectionTop:
+			if (width > height) { offset -= width - height; }
+			rectToReturn.origin = CGPointMake(height - offset, 0.0);
+			break;
+	}
+
     return rectToReturn;
 }
 
@@ -1262,23 +1265,6 @@
 - (CGFloat) getOffsetForDirection:(PPRevealSideDirection)direction andInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     CGFloat offset = [[_viewControllersOffsets objectForKey:[NSNumber numberWithUnsignedInteger:direction]] floatValue];
-    
-    if (UIInterfaceOrientationIsLandscape(interfaceOrientation) && offset != 0.0) {
-        if (![self isOptionEnabled:PPRevealSideOptionsKeepOffsetOnRotation])
-        {
-            // Take an orientation free rect
-            CGRect portraitBounds = [UIScreen mainScreen].bounds;
-            // Get the difference between width and height
-            CGFloat diff = 0.0;
-            if (direction == PPRevealSideDirectionLeft || direction == PPRevealSideDirectionRight)
-                diff = portraitBounds.size.height - portraitBounds.size.width;
-            if (direction == PPRevealSideDirectionTop)
-                diff = -(portraitBounds.size.height - portraitBounds.size.width);
-			
-            // Store the offset + the diff
-            offset += diff;
-        }
-    }
 	
     return offset;
 }
@@ -1731,19 +1717,9 @@ UIInterfaceOrientation PPInterfaceOrientation(void) {
 }
 
 CGRect PPScreenBounds(void) {
-	CGRect bounds = [UIScreen mainScreen].bounds;
-	if (UIInterfaceOrientationIsLandscape(PPInterfaceOrientation())) {
-		CGFloat width = bounds.size.width;
-		bounds.size.width = bounds.size.height;
-		bounds.size.height = width;
-	}
-	return bounds;
+	return [UIScreen mainScreen].bounds;
 }
 
 CGFloat PPStatusBarHeight(void) {
-    if ([[UIApplication sharedApplication] isStatusBarHidden]) return 0.0;
-    if (UIInterfaceOrientationIsLandscape(PPInterfaceOrientation()))
-        return [[UIApplication sharedApplication] statusBarFrame].size.width;
-    else
-        return [[UIApplication sharedApplication] statusBarFrame].size.height;
+	return [[UIApplication sharedApplication] statusBarFrame].size.height;
 }
